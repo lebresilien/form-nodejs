@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<!-- Opening HTML Tags-->
+<html>
+    <!-- Opening head Tags-->
+    <head>
+        <!-- Opening head Tags-->
+        <title>Form</title>
+    </head>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid black;
+            width: 500px;
+        }
+        #list {
+            row-gap: 30;
+        }
+        .danger {
+            background-color: red;
+            border-radius: 10px;
+            cursor: pointer;
+            color: white;
+            box-shadow: none;
+        }
+    </style>
+    <!-- Opening body Tag -->
+    <body>
+        <div>
+            <!-- Creating the parameter Username as type= "text"-->
+            <label>Name: </label>
+            <input type="text" placeholder="Name" id="name"><br><br>
+            <!-- Creating the parameter Email as type= "text"-->
+            <label>Email: </label>
+            <input type="email" placeholder="Email" id="email"><br><br>
+            <!-- Creating the submit button -->
+            <button onclick="save()">Submit</button>
+        </div>
+
+        <div id="list"></div>
+
+    </body>
+    <script>
+
+        const http = new XMLHttpRequest();
+        var url = "api/getAll";
+        http.onreadystatechange = function() {
+
+            if (this.readyState == 4 && this.status == 200) {
+
+                const res = http.responseText;
+                const data = JSON.parse(res);
+                
+                for(let i = 0; i < data.length; i++) {
+                   //console.log()
+                    const container = document.createElement('div');
+                    container.setAttribute('name', data[i]._id);
+                    container.classList.add('container');
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = data[i].name;
+                    container.appendChild(nameSpan);
+                    
+                    const emailSpan = document.createElement('span');
+                    emailSpan.textContent = data[i].email;
+                    container.appendChild(emailSpan);
+
+                    const button = document.createElement('button');
+                    button.classList.add('danger');
+                    button.textContent = 'Supprimer';
+                    button.addEventListener('click', remove);
+                    container.appendChild(button);
+
+                    document.querySelector('#list').appendChild(container);
+                }
+            }
+        };
+
+        http.open("GET", url, false);
+        http.send();
+
+        function remove() {
+            
+            const id = this.parentNode.getAttribute('name');
+            const endpoint_1 = "api/delete/"+id;
+
+            http.onreadystatechange = function() {
+
+                if (this.readyState == 4 && this.status == 200) {
+                    document.querySelector('[name="'+id+'"]').style.display = "none"
+                }
+            }
+            http.open("DELETE", endpoint_1, true);
+            http.send(null);
+        }
+
+        const save = () => {
+            
+            var endpoint = "api/post";
+
+            const params = {
+                email: document.querySelector('#email').value,
+                name: document.querySelector('#name').value
+            }
+
+            http.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+
+                    const res = http.responseText;
+                    const data = JSON.parse(res);
+
+                    const container = document.createElement('div');
+                    container.setAttribute('name', data._id);
+                    container.classList.add('container');
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = data.name;
+                    container.appendChild(nameSpan);
+                    
+                    const emailSpan = document.createElement('span');
+                    emailSpan.textContent = data.email;
+                    container.appendChild(emailSpan);
+
+                    const button = document.createElement('button');
+                    button.classList.add('danger');
+                    button.textContent = 'Supprimer';
+                    button.addEventListener('click', remove);
+                    container.appendChild(button);
+
+                    document.querySelector('#list').appendChild(container);
+                }
+            };
+
+            http.open("POST", endpoint, true);
+            http.setRequestHeader("Content-type", "application/json");
+            http.send(JSON.stringify(params)); 
+        }
+
+    </script>
+<html>
